@@ -1,0 +1,374 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <title>DropD Demo</title>
+        <link href='https://fonts.googleapis.com/css?family=Bevan' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+        <style>
+            body, html{
+                width:100%; height: 100%;margin:0; padding:0;
+                font-family: 'Bevan', cursive;
+                background:#fffcf5;
+            }
+            body{
+                opacity: 0;
+                transition: opacity 0.5s ease-in-out;
+            }
+
+            .dropD-container{
+                width: 240px;
+                position: relative;
+                cursor:  pointer;
+                color: #e1e1e1;
+                font-family: 'Raleway', sans-serif;
+            }
+            .dropD-container:before{
+                content: "";
+                position: absolute;
+                right: 10px;
+                top: 20px;
+                z-index: 100;
+                width: 0; 
+                height: 0; 
+                border-left: 7px solid transparent;
+                border-right: 7px solid transparent;
+                border-top: 7px solid #19B5FE;
+            }
+            .dropD-container > span{
+                width: 100%;
+                display: block;
+                position: relative;
+                z-index: 10;
+                border:solid 1px #e1e1e1;
+                -moz-box-sizing:border-box;
+                box-sizing:border-box;
+                padding:15px 10px;
+                
+                background:#ffffff;
+                -webkit-transition:all 0.5s ease-in-out;
+                -moz-transition:all 0.5s ease-in-out;
+                -ms-transition:all 0.5s ease-in-out;
+                -o-transition:all 0.5s ease-in-out;
+                transition:all 0.5s ease-in-out;
+            }
+            .dropD-container a{text-decoration: none; color:#e1e1e1;}
+            .dropD-list{
+                margin:0;
+                padding:0;
+                max-height:0;
+                overflow: hidden;
+                background:#ffffff;
+                margin-top: 20px;
+                
+                -moz-box-sizing:border-box;
+                box-sizing:border-box;
+
+                -webkit-transition:all 0.5s linear;
+                -moz-transition:all 0.5s linear;
+                -ms-transition:all 0.5s linear;
+                -o-transition:all 0.5s linear;
+                transition:all 0.5s linear;
+            }
+            .dropD-list li{
+                padding:7px 10px;
+            }
+            .dropD-list li:hover{
+                background:#19B5FE;
+            }
+            .dropD-active .dropD-list{
+                max-height: 400px;
+                
+            }
+            .dropD-active > span{
+                background:#19B5FE;
+            }
+            .dropD-active.dropD-container:before{
+                border-top: 7px solid #e1e1e1;
+            }
+
+
+            .cwidth{
+                width:1140px;
+                margin: 200px auto;
+
+            }
+            #demo-home{
+                position: relative;
+            }
+            #demo-top, #demo-bottom{
+                width: 100%;
+                position: absolute;
+            }
+            #demo-top{
+                background:#19B5FE;
+                top: 0;
+                z-index: 100;
+                overflow: hidden;
+            }
+            #demo-bottom{
+                background:#fffcf5;
+                bottom:0;
+                z-index: 0;
+            }
+            .demo-title{
+                position: absolute;
+                width: 100%;
+                text-align: center;
+                font-size: 120px;
+            }
+            #demo-top-title{
+                color:#fffcf5;
+            }
+            #demo-top-title span{
+                opacity: 0;
+                display: inline-block;
+                
+                -webkit-transition:all 0.5s ease-in-out;
+                -moz-transition:all 0.5s ease-in-out;
+                -ms-transition:all 0.5s ease-in-out;
+                -o-transition:all 0.5s ease-in-out;
+                transition:all 0.5s ease-in-out;
+            }
+            #demo-bottom-title{
+                top:50%;
+                color:#19B5FE;
+                -webkit-transform:translateY(-50%);
+                -moz-transform:translateY(-50%);
+                -ms-transform:translateY(-50%);
+                -o-transform:translateY(-50%);
+                transform:translateY(-50%);
+            }
+            /*.cap-d{
+                opacity: 0;
+                color:#22313F;
+                -webkit-transition:opacity 0.5s ease-in-out 1s;
+                -moz-transition:opacity 0.5s ease-in-out 1s;
+                -ms-transition:opacity 0.5s ease-in-out 1s;
+                -o-transition:opacity 0.5s ease-in-out 1s;
+                transition:opacity 0.5s ease-in-out 1s;
+            }*/
+            .demo-title span{
+                position: relative;
+            }
+            .dot{opacity: 0;}
+
+            .demo-arrow-down{
+                width: 0; 
+                height: 0;
+                position: absolute;
+                bottom: 10px; 
+                border-left: 25px solid transparent;
+                border-right: 25px solid transparent;
+                border-top: 25px solid #19B5FE;
+                left:50%;
+                cursor: pointer;
+
+                -webkit-animation:arrowbounce 1s linear infinite;
+                animation:arrowbounce 1s linear infinite;
+
+                -webkit-transform:translateX(-50%);
+                -moz-transform:translateX(-50%);
+                -ms-transform:translateX(-50%);
+                -o-transform:translateX(-50%);
+                transform:translateX(-50%);
+            }
+            @-webkit-keyframes arrowbounce{
+                0%, 100%{bottom:10px;}
+                50%{bottom:15px;}
+            }
+            @keyframes arrowbounce{
+                0%, 100%{bottom:10px;}
+                50%{bottom:15px;}
+            }
+
+            .switch{
+                width:100%; 
+                height:50px; 
+                background:#19B5FE; 
+                color:#fffcf5; 
+                text-align: center;
+                font-family: 'Raleway', sans-serif;
+                line-height: 50px;
+                cursor: pointer;
+                position: absolute;
+                bottom: 25px;
+                border: solid 1px #19B5FE;
+                -webkit-transition:all 0.5s ease-in-out;
+                -moz-transition:all 0.5s ease-in-out;
+                -ms-transition:all 0.5s ease-in-out;
+                -o-transition:all 0.5s ease-in-out;
+                transition:all 0.5s ease-in-out;
+                
+                -moz-box-sizing:border-box;
+                box-sizing:border-box;
+            }
+            .switch:hover{
+                background:#fffcf5;
+                color:#19B5FE;
+            }
+            .row{
+                width: 102%;
+                position: relative;
+                left: -1%;
+            }
+            .col{
+                width:48%;
+                margin:0 1%;
+                float: left; 
+                position: relative; 
+                min-height:400px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="demo-home">
+            <div id="demo-top">
+                <div class="demo-title" id="demo-top-title">
+                    <span class="letter">d</span>
+                    <span class="letter">r</span>
+                    <span class="letter">o</span>
+                    <span class="letter">p</span>
+                    <span class="letter cap-d">D</span>
+                    <span class="dot">.</span>
+                    <span class="letter">j</span>
+                    <span class="letter">s</span>
+                </div>
+                
+            </div>
+            <div id="demo-bottom">
+                <div class="demo-title" id="demo-bottom-title">
+                    <span>d</span>
+                    <span>r</span>
+                    <span>o</span>
+                    <span>p</span>
+                    <span class="cap-d">D</span>
+                    <span>.</span>
+                    <span>j</span>
+                    <span>s</span>
+                </div>
+                <div class="demo-arrow-down" onclick="scrolldown(this);"></div>
+            </div>
+            
+        </div><!-- demo-home -->
+
+        <div id="cwidth" class="cwidth">
+            <div class="row">
+                <div class="col">
+                    <div id="sorter-with-select" class="sorter">
+                        <select>
+                            <option value="value1">Value 1</option>
+                            <option value="value2">Value 2</option>
+                            <option value="value3">Value 3</option>
+                        </select>
+                    </div>
+                    <div id="sorter-with-select2" class="sorter">
+                        <select>
+                            <option value="value1">Value 1</option>
+                            <option value="value2">Value 2</option>
+                            
+                        </select>
+                    </div>
+                    <div class="switch" onclick="convertSelect(this);">
+                        convert
+                    </div>
+                </div><!-- col -->
+
+                <div class="col">
+                    <div id="sorter-without-select">
+                        <span data-value="value1">Value 1</span>
+                        <ul>
+                            <li data-value="value1"><a href="http://www.nicksprague.ca">Value 1</a></li>
+                            <li data-value="value2"><a href="http://www.nicksprague.ca">Value 2</a></li>
+                            <li data-value="value3"><a href="http://www.nicksprague.ca">Value 3</a></li>
+                        </ul>
+                    </div>
+
+                     <div class="switch" onclick="convertUl(this);">
+                        convert
+                    </div>
+                </div><!-- col -->
+            </div><!-- row -->
+        </div><!-- cwidth -->
+        <script>
+
+            var demotop = document.getElementById('demo-top');
+            var demobottom = document.getElementById('demo-bottom');
+            var demohome = document.getElementById('demo-home');
+            var letters = demotop.getElementsByClassName('letter');
+            
+            
+            function scrolldown(el){
+                el.style.opacity = 0;
+                var destination = document.getElementById('cwidth');
+                var counter = window.pageYOffset;
+                var scroll = setInterval(function(){
+                    counter+=20;
+                    window.scroll(0, counter);
+                    if(counter >= destination.offsetTop) clearInterval(scroll);
+                },1000/60)
+            }
+
+            function letteranim(el, delay){
+
+                setTimeout(function(){
+                    el.style.opacity = 1;
+                    el.style.webkitTransform = "translateY("+ ((window.innerHeight / 2) - 100) +"px)";
+                    el.style.transform = "translateY("+ ((window.innerHeight / 2) - 100) +"px)";
+                }, delay);
+            }//leteranim
+
+            for(var i = 0; i < letters.length; i++){
+                letteranim(letters[i], i * 200);
+            }
+
+            window.onload = function(){
+                document.body.style.opacity = 1;
+                setbg();
+            }
+            window.onresize = function(){
+                setbg();
+            }
+            function setbg(){
+                var windowheight = window.innerHeight;
+                demotop.style.height = windowheight / 2 + 'px';
+                demobottom.style.height = windowheight + 'px';
+                demohome.style.height = windowheight + 'px';
+            }
+
+        </script>
+        <script src="dropd.js"></script>
+        <script>
+            
+            var drop = new DropD({
+                domid           : "sorter-with-select", 
+                isSelect        : true
+            });
+            
+            var drop3 = new DropD({
+                domid           : "sorter-with-select2", 
+                isSelect        : true
+            });
+            drop3.init();
+            var drop2 = new DropD({
+                domid   : "sorter-without-select"
+            });
+            
+
+            function convertSelect(el){
+                if(!el.clicked){
+                    drop.init();
+                    el.clicked = true;
+                }
+            }
+            function convertUl(el){
+                if(!el.clicked){
+                    drop2.init();
+                    el.clicked = true;
+                }
+            }
+
+        </script>
+    </body>
+</html>
