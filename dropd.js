@@ -3,9 +3,12 @@
 
         var defaults = {
             domid           : "",
-            containerClass  : "dropD-container",
-            listClass       : "dropD-list",
-            isSelect        : false
+            containerClass  : "dropD_container",
+            listClass       : "dropD_list",
+            dropSpeed       : 500,
+            easing          : "ease-in-out",
+            maxHeight       : "400px",
+            eventType       : 'click'
         }
 
         if(arguments[0] && typeof arguments[0] === "object"){
@@ -14,101 +17,203 @@
     }
 
     DropD.prototype.init = function(){
-        if(this.options.isSelect){
+        var contentHolder = document.getElementById(this.options.domid);
+        var isSelect = contentHolder.getElementsByTagName('select');
+        if(contentHolder) contentHolder.flag = true;
+        
+        if(isSelect.length > 0){
+            this.options.isSelect = true;
             buildDropDown.call(this);
+        }else{
+            var hiddenClickBox = createHiddenClickBox(this);
+            
+            contentHolder.appendChild(hiddenClickBox);
         }
+        
         this.li = document.getElementById(this.options.domid).getElementsByTagName('li');
         
-        initializeEvents.call(this);
+        this.initializeEvents();
     }
-    function  initializeEvents(){
+    DropD.prototype.initializeEvents = function(){
         
         var dropContainer = document.getElementById(this.options.domid);
         var spanLabel = dropContainer.getElementsByTagName('span')[0];
-        //this is broken... only stores the most recent drop down
+        spanLabel.style.zIndex = '2';
+        
         var obj = this;
-       
+        
         var listitems = obj.li;
         var ul = dropContainer.getElementsByTagName('ul')[0];
-        
-        ul.setAttribute('class', obj.options.listClass);
-        dropContainer.setAttribute('class', obj.options.containerClass);
+        var hiddenClickBox = document.getElementById(obj.options.domid+"_hiddenBox");
 
-        spanLabel.onclick = function(){
+        ul.setAttribute('class', obj.options.listClass);
+        styleUl(ul, obj);
+        dropContainer.setAttribute('class', obj.options.containerClass);
+        
+        //TODO: properly implement hover event
+        if(obj.options.eventType === 'click'){
+
+            spanLabel.onclick = toggleHeight;
+
+        }else if(obj.options.eventType === 'hover'){
+            spanLabel.onmouseenter = toggleHeight;
+
+        }
+        function toggleHeight(){
+            
             if(!dropContainer.open){
-                dropContainer.setAttribute('class', obj.options.containerClass + ' dropD-active');
+                
+                ul.style.maxHeight = obj.options.maxHeight;
+                ul.style.opacity = 1;
                 dropContainer.open = true;
+                dropContainer.style.zIndex = 999;
+                addClass(dropContainer, obj.options.containerClass + '_active');
+                hiddenClickBox.style.display = 'block';
+                
             }else{
-                dropContainer.setAttribute('class', obj.options.containerClass);
+                ul.style.maxHeight = 0;
+                ul.style.opacity = 0;
                 dropContainer.open = false;
+                removeClass(dropContainer, obj.options.containerClass + '_active');
+                hiddenClickBox.style.display = 'none';
+                setTimeout(function(){
+                    dropContainer.style.zIndex = 0;
+                }, obj.options.dropSpeed);
             }
             
-            if (document.droplock) clearTimeout(document.droplock);
-            document.droplock=setTimeout(function(){document.droplock=null;},300);
+        }
+        hiddenClickBox.onclick = function(){
+            setTimeout(function(){
+                dropContainer.style.zIndex = 0;
+            }, obj.options.dropSpeed);
             
+            dropContainer.open = false;
+            removeClass(dropContainer, obj.options.containerClass + '_active');
+            ul.style.maxHeight = 0;
+            ul.style.opacity = 0;
+            this.style.display = 'none';
+        }
+
+
+        for(var i = 0; i< listitems.length; i++){
+            obj.li[i].addEventListener('click',function(){
+                listhelper(this, obj);
+            }, false); 
+        }
+        function listhelper(li, obj){
+            
+            var data = li.getAttribute('data-value');
+            var text = li.innerHTML;
+            
+            spanLabel.innerHTML = text;
+            spanLabel.setAttribute('data-value', data);
+
+            if(obj.options.isSelect){
+                dropContainer.getElementsByTagName('select')[0].value = data;
+            }
+            hiddenClickBox.style.display = 'none';
+            dropContainer.open = false;
+            removeClass(dropContainer, obj.options.containerClass + '_active');
+            setTimeout(function(){
+                dropContainer.style.zIndex = 0;
+            }, obj.options.dropSpeed);
+            ul.style.maxHeight = 0;
+            ul.style.opacity = 0;
 
         }
-        document.body.onclick = function(){
-           
-            /*if (document.droplock) return;
-            
-            if(dropContainer&&dropContainer.open){
-                dropContainer.className += " " + obj.options.containerClass;
-                dropContainer.open = false;
-            }*/
+        function removeClass(el, cls){
+            if(hasClass(el, cls)){
+                el.className = el.className.replace(cls, '');
+            }
         }
-        /*document.body.onclick = function(){
-        if(!document.overlaylock){
-            $('#signup_movein').hide();
-            $('#signup_tour_date').hide();
-            $(".signup_date").attr('data-clicked', '1');
+        function addClass(el, cls){
+            el.className = el.className.replace(el.className, el.className + ' ' +cls);
         }
-    }*/
-        for(var i = 0; i< listitems.length; i++){
-             obj.li[i].onclick = function(){
-                var opt = this;
-                var data = opt.getAttribute('data-value');
-                var text = opt.innerHTML;
-                
-                spanLabel.innerHTML = text;
-                spanLabel.setAttribute('data-value', data);
-                dropContainer.setAttribute('class', obj.options.containerClass);
-                dropContainer.open = false;
-                if(obj.options.isSelect){
-                    dropContainer.getElementsByTagName('select')[0].value = data;
-                }
+        function hasClass(el, cls){
+            if((' ' + el.className + ' ').indexOf(' ' + cls + ' ') > -1){
+                return true;
+            }else{
+                return false;
             }
         }
     }
-
+    
     function buildDropDown(){
+        var obj = this;
         var contentHolder = document.getElementById(this.options.domid);
         var selectContainer = contentHolder.getElementsByTagName('select')[0];
         var selectoptions = selectContainer.getElementsByTagName('option');
         
+
         var ul = document.createElement('ul');
-        ul.className = 'dropD-list';
+        ul.className = this.options.listClass;
+        styleUl(ul, this);
+        
         for(var i = 0; i<selectoptions.length; i++){
             var li = document.createElement('li');
-            if(i === 0){
+            /*if(i === 0){
                 var span = document.createElement('span');
                 span.innerHTML = selectoptions[i].innerHTML;
                 contentHolder.appendChild(span);
+            }*/
+            if(selectoptions[i].selected){
+               var span = document.createElement('span');
+                span.innerHTML = selectoptions[i].innerHTML;
+                contentHolder.appendChild(span); 
             }
             li.setAttribute('data-value', selectoptions[i].value);
             li.innerHTML = selectoptions[i].innerHTML;
-            ul.appendChild(li);
+            if(selectoptions[i].selected && i != 0){
+                ul.insertBefore(li, ul.childNodes[0]);
+            }else{
+                ul.appendChild(li);
+            }
+            
+            
+            
+
+            
         }
         selectContainer.style.display = 'none';
+        
+        var hiddenClickBox = createHiddenClickBox(obj);
+
+        
         contentHolder.appendChild(ul);
+        contentHolder.appendChild(hiddenClickBox);
     }
 
-    function setDroplock(){
-        document.droplock = setTimeout(function(){
-            document.droplock = null;
-        }, 250);
-    }
+    
+    function createHiddenClickBox(obj){
 
+        var hiddenClickBox = document.createElement('div');
+        hiddenClickBox.id = obj.options.domid + "_hiddenBox";
+        hiddenClickBox.style.cssText = 
+            "width: 100%;"      +
+            "height: 100%;"     +
+            "position: fixed;"  +
+            "top: 0px;"         +
+            "left: 0px;"        + 
+            "zIndex: 0;"        +
+            "display:none;"     +
+            "cursor: auto;";
+        return hiddenClickBox;
+    }
+    function styleUl(ul, obj){
+        ul.style.cssText = 
+            "-moz-box-sizing:border-box;"       +
+            "box-sizing:border-box;"            +
+            "z-index:2;"                        +
+            "margin:0;"                         +
+            "padding:0;"                        +
+            "max-height:0;"                     +
+            "overflow: hidden;"                 +
+            "position: absolute;"               +
+            "width:100%;"                       +
+            "opacity: 0;"                       +
+            "list-style: none;"                 +
+            "transition: all " + obj.options.dropSpeed + "ms " + obj.options.easing + ";";
+    }
     function extendedDefaults(source, properties){
         var property;
         for(property in properties){
